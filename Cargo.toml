@@ -9,6 +9,7 @@ documentation = "https://docs.rs/send_ctrlc"
 keywords = ["ctrl-c", "ctrlc", "sigint", "signal"]
 categories = ["os"]
 readme = "README.md"
+edition = "2024"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
