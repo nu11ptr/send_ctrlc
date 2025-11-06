@@ -1,0 +1,17 @@
+[package]
+name = "send_ctrlc"
+version = "0.1.0"
+authors = ["Scott Meeuwsen <smeeuwsen@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "A cross platform crate for sending ctrl-c to child processes"
+repository = "https://github.com/nu11ptr/send_ctrlc"
+documentation = "https://docs.rs/send_ctrlc"
+keywords = ["ctrl-c", "ctrlc", "sigint", "signal"]
+categories = ["os"]
+readme = "README.md"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
