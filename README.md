@@ -20,6 +20,7 @@ cargo add send_ctrlc -F tokio
 * Cross platform (including Windows)
 * Uniform cross platform API
 * Both sync and async
+* Only 2 unsafe calls
 * Minimal dependencies: 
     * Synchronous: `libc` on unix, and `windows-sys` on windows
     * Asynchronous: `tokio` (with only `process` feature)
@@ -27,21 +28,21 @@ cargo add send_ctrlc -F tokio
 ## Examples
 
 ```rust
-use send_ctrlc::{Interruptable as _};
+use send_ctrlc::{Interruptible as _, InterruptibleCommand as _};
 
 // Synchronous...
 
 #[cfg(not(feature = "tokio"))]
 fn main() {
-        // Start a continuous ping using our special command constructor function
-        let mut command = send_ctrlc::new_command("ping");
+        // Create a continuous ping standard command
+        let mut command = std::process::Command::new("ping");
         #[cfg(windows)]
         command.arg("-t");
         command.arg("127.0.0.1");
 
         // Spawn the ping, interrupt it, and wait for it to complete
-        let mut child = command.spawn().unwrap();
-        child.send_ctrl_c().unwrap();
+        let mut child = command.spawn_interruptible().unwrap();
+        child.interrupt().unwrap();
         child.wait().unwrap();
 }
 
@@ -50,15 +51,15 @@ fn main() {
 #[cfg(feature = "tokio")]
 #[tokio::main]
 async fn main() {
-        // Start a continuous ping using our special command constructor function
-        let mut command = send_ctrlc::new_tokio_command("ping");
+        // Create a continuous ping standard command
+        let mut command = tokio::process::Command::new("ping");
         #[cfg(windows)]
         command.arg("-t");
         command.arg("127.0.0.1");
 
         // Spawn the ping, interrupt it, and wait for it to complete
-        let mut child = command.spawn().unwrap();
-        child.send_ctrl_c().unwrap();
+        let mut child = command.spawn_interruptible().unwrap();
+        child.interrupt().unwrap();
         child.wait().await.unwrap();
 }
 ```
