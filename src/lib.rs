@@ -4,8 +4,7 @@
 
 mod stdlib;
 #[cfg(feature = "tokio")]
-/// Optional module for tokio support
-pub mod tokio;
+mod tokio;
 #[doc = include_str!("../README.md")]
 mod readme_tests {}
 
