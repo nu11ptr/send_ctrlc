@@ -18,7 +18,7 @@ pub trait Interruptable: InterruptablePid {
     fn send_ctrl_c(&self) -> io::Result<()> {
         match self.pid() {
             Some(pid) => inner::send_ctrl_c(pid),
-            None => Err(io::Error::new(io::ErrorKind::Other, "Process has no pid")),
+            None => Err(io::Error::other("Process has no pid")),
         }
     }
 }
