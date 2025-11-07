@@ -73,35 +73,53 @@ impl InterruptablePid for tokio::process::Child {
 }
 
 /// Create a new interruptable command
-#[cfg(unix)]
 pub fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
-    Command::new(program)
+    inner::new_command(program)
 }
 
-/// Create a new interruptable command
-#[cfg(windows)]
-pub fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
-    use std::os::windows::process::CommandExt as _;
+mod inner {
+    use std::{ffi::OsStr, process::Command};
 
-    let mut command = Command::new(program);
-    command.creation_flags(CREATE_NEW_PROCESS_GROUP);
-    command
+    #[cfg(windows)]
+    pub fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
+        use std::os::windows::process::CommandExt as _;
+
+        let mut command = Command::new(program);
+        command.creation_flags(crate::CREATE_NEW_PROCESS_GROUP);
+        command
+    }
+
+    #[cfg(unix)]
+    pub fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
+        use std::process::Command;
+
+        Command::new(program)
+    }
 }
 
 /// Create a new interruptable tokio command
 #[cfg_attr(docsrs, doc(cfg(feature = "tokio")))]
-#[cfg(all(feature = "tokio", target_family = "windows"))]
+#[cfg(feature = "tokio")]
 pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> tokio::process::Command {
-    let mut command = tokio::process::Command::new(program);
-    command.creation_flags(CREATE_NEW_PROCESS_GROUP);
-    command
+    inner_tokio::new_tokio_command(program)
 }
 
-/// Create a new interruptable tokio command
-#[cfg_attr(docsrs, doc(cfg(feature = "tokio")))]
-#[cfg(all(feature = "tokio", target_family = "unix"))]
-pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> tokio::process::Command {
-    tokio::process::Command::new(program)
+#[cfg(feature = "tokio")]
+mod inner_tokio {
+    use std::ffi::OsStr;
+    use tokio::process::Command;
+
+    #[cfg(windows)]
+    pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> Command {
+        let mut command = Command::new(program);
+        command.creation_flags(crate::CREATE_NEW_PROCESS_GROUP);
+        command
+    }
+
+    #[cfg(unix)]
+    pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> Command {
+        Command::new(program)
+    }
 }
 
 #[cfg(test)]
