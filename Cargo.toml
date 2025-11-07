@@ -11,8 +11,17 @@ categories = ["os"]
 readme = "README.md"
 edition = "2024"
 
+[dependencies]
+tokio = { version = "1", features = ["process"], optional = true }
+
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[package.metadata.docs.rs]
+all-features = true

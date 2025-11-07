@@ -64,8 +64,11 @@ jobs:
         - name: Run tests
           run: cargo test
 
+        - name: Run tests (tokio)
+          run: cargo test --features tokio
+
         - name: Run tests with coverage
-          run: cargo llvm-cov nextest --output-path codecov.json --codecov
+          run: cargo llvm-cov nextest --output-path codecov.json --codecov --features tokio
 
         - name: Upload coverage reports to Codecov
           uses: codecov/codecov-action@v5
