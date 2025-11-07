@@ -28,7 +28,7 @@ cargo add send_ctrlc -F tokio
 ## Examples
 
 ```rust
-use send_ctrlc::{Interruptible as _, InterruptibleCommand as _};
+use send_ctrlc::{Interruptible as _};
 
 // Synchronous...
 
@@ -41,7 +41,7 @@ fn main() {
         command.arg("127.0.0.1");
 
         // Spawn the ping, interrupt it, and wait for it to complete
-        let mut child = command.spawn_interruptible().unwrap();
+        let mut child = command.spawn().unwrap();
         child.interrupt().unwrap();
         child.wait().unwrap();
 }
@@ -58,7 +58,7 @@ async fn main() {
         command.arg("127.0.0.1");
 
         // Spawn the ping, interrupt it, and wait for it to complete
-        let mut child = command.spawn_interruptible().unwrap();
+        let mut child = command.spawn().unwrap();
         child.interrupt().unwrap();
         child.wait().await.unwrap();
 }

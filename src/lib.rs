@@ -11,21 +11,6 @@ mod readme_tests {}
 
 use std::io;
 
-pub use stdlib::InterruptibleChild;
-
-#[cfg(windows)]
-const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;
-
-/// A trait for spawning interruptible child processes
-pub trait InterruptibleCommand {
-    type Child: Interruptible;
-
-    /// Spawn a new interruptible child process that has been specifically configured
-    /// to ensure it is interruptible. An error is returned if one occurs while attempting
-    /// to spawn the child process.
-    fn spawn_interruptible(&mut self) -> io::Result<Self::Child>;
-}
-
 /// A trait for sending interrupts/ctrl-c to child processes.
 ///
 /// NOTE: By implementing this trait, you are stating that the correct steps have been taken to
@@ -67,12 +52,16 @@ mod inner {
 
     #[cfg(windows)]
     pub fn interrupt(pid: u32) -> io::Result<()> {
-        use windows_sys::Win32::System::Console::{CTRL_C_EVENT, GenerateConsoleCtrlEvent};
+        use windows_sys::Win32::System::Console::{CTRL_BREAK_EVENT, GenerateConsoleCtrlEvent};
 
-        // NOTE: This only works if the process is in a new process group
+        // NOTE: After testing, it seems CTRL_BREAK_EVENT works in all cases (or all the ones I tried).
+        // CTRL_C_EVENT didn't work for the `ctrlc` crate, for example, which is my primary use case.
+        // NOTE 2: Despite what the docs say, and I found them confusing, it seems that no special
+        // creation flags are actually needed anymore on Windows 10+. According to ChatGPT, this changed
+        // around Windows 10+. I don't have anything older to test on to confirm or deny this.
         // SAFETY: This is a standard Windows console function. Any number passed in is memory safe,
         // even if it impacts a process the user hadn't intended.
-        if unsafe { GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid) } != 0 {
+        if unsafe { GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid) } != 0 {
             Ok(())
         } else {
             Err(io::Error::last_os_error())
