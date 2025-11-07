@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 //! A cross platform crate for sending ctrl-c to child processes
 
 #[doc = include_str!("../README.md")]
@@ -87,6 +89,7 @@ pub fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
 }
 
 /// Create a new interruptable tokio command
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio")))]
 #[cfg(all(feature = "tokio", target_family = "windows"))]
 pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> tokio::process::Command {
     let mut command = tokio::process::Command::new(program);
@@ -95,6 +98,7 @@ pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> tokio::process::Command
 }
 
 /// Create a new interruptable tokio command
+#[cfg_attr(docsrs, doc(cfg(feature = "tokio")))]
 #[cfg(all(feature = "tokio", target_family = "unix"))]
 pub fn new_tokio_command<S: AsRef<OsStr>>(program: S) -> tokio::process::Command {
     tokio::process::Command::new(program)
