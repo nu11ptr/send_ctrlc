@@ -20,6 +20,7 @@ const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;
 pub trait InterruptibleCommand {
     type Child: Interruptible;
 
+    /// Spawn a new interruptible child process
     fn spawn_interruptible(&mut self) -> io::Result<Self::Child>;
 }
 
