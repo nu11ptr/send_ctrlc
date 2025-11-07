@@ -59,6 +59,8 @@ mod inner {
 
     #[cfg(unix)]
     pub fn send_ctrl_c(pid: u32) -> io::Result<()> {
+        // SAFETY: This is the standard POSIX kill function. Any number passed in is memory safe,
+        // even if it impacts a process the user hadn't intended.
         if unsafe { libc::kill(pid as i32, libc::SIGINT) } == 0 {
             Ok(())
         } else {
@@ -71,6 +73,8 @@ mod inner {
         use windows_sys::Win32::System::Console::{CTRL_C_EVENT, GenerateConsoleCtrlEvent};
 
         // NOTE: This only works if the process is in a new process group
+        // SAFETY: This is a standard Windows console function. Any number passed in is memory safe,
+        // even if it impacts a process the user hadn't intended.
         if unsafe { GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid) } != 0 {
             Ok(())
         } else {
