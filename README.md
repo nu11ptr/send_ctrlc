@@ -7,6 +7,14 @@
 
 A cross platform crate for sending ctrl-c to child processes
 
+## Install
+
+```shell
+cargo add send_ctrlc
+# Or for async/tokio:
+cargo add send_ctrlc -F tokio
+```
+
 ## Features
 
 * Cross platform (including Windows)
