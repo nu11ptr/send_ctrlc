@@ -60,4 +60,13 @@ mod tests {
         child.interrupt().unwrap();
         child.wait().await.unwrap();
     }
+
+    #[tokio::test]
+    async fn test_completed_interruptible_command() {
+        let mut command = tokio::process::Command::new("ping");
+
+        let mut child = command.spawn_interruptible().unwrap();
+        child.wait().await.unwrap();
+        assert!(child.interrupt().is_err());
+    }
 }

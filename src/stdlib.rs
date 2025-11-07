@@ -60,4 +60,13 @@ mod tests {
         child.interrupt().unwrap();
         child.wait().unwrap();
     }
+
+    #[test]
+    fn test_completed_interruptible_command() {
+        let mut command = std::process::Command::new("ping");
+
+        let mut child = command.spawn_interruptible().unwrap();
+        child.wait().unwrap();
+        assert!(child.interrupt().is_err());
+    }
 }
