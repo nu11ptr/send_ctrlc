@@ -67,12 +67,15 @@ mod inner {
 
     #[cfg(windows)]
     pub fn interrupt(pid: u32) -> io::Result<()> {
-        use windows_sys::Win32::System::Console::{CTRL_C_EVENT, GenerateConsoleCtrlEvent};
+        use windows_sys::Win32::System::Console::{CTRL_BREAK_EVENT, GenerateConsoleCtrlEvent};
 
-        // NOTE: This only works if the process is in a new process group
+        // NOTE: After testing, it seems CTRL_BREAK_EVENT works in all cases (or all the ones I tried).
+        // CTRL_C_EVENT didn't work when using the `ctrlc` crate, for example, which is my primary use case.
+        // NOTE 2: This only works if the process is in a new process group. I had mixed results with this,
+        // so I'm not sure if it's actually required, but in one case it broke Windows CI, so I'm leaving it in.
         // SAFETY: This is a standard Windows console function. Any number passed in is memory safe,
         // even if it impacts a process the user hadn't intended.
-        if unsafe { GenerateConsoleCtrlEvent(CTRL_C_EVENT, pid) } != 0 {
+        if unsafe { GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, pid) } != 0 {
             Ok(())
         } else {
             Err(io::Error::last_os_error())
