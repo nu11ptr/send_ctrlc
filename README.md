@@ -61,9 +61,7 @@ async fn main() {
         child.send_ctrl_c().unwrap();
         child.wait().await.unwrap();
 }
-
 ```
-
 
 ## Contributions
 

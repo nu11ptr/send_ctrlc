@@ -1,6 +1,6 @@
 [package]
 name = "send_ctrlc"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Scott Meeuwsen <smeeuwsen@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "A cross platform crate for sending ctrl-c to child processes"
