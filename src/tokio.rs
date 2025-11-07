@@ -26,8 +26,8 @@ impl InterruptibleCommand for Command {
 pub struct InterruptibleChild(Child);
 
 impl Interruptible for InterruptibleChild {
-    fn pid(&self) -> Option<u32> {
-        self.0.id()
+    fn pid(&mut self) -> io::Result<Option<u32>> {
+        Ok(self.0.id())
     }
 }
 

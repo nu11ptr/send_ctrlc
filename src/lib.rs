@@ -16,22 +16,30 @@ pub use stdlib::InterruptibleChild;
 #[cfg(windows)]
 const CREATE_NEW_PROCESS_GROUP: u32 = 0x00000200;
 
-/// Trait for spawning interruptible child processes
+/// A trait for spawning interruptible child processes
 pub trait InterruptibleCommand {
     type Child: Interruptible;
 
-    /// Spawn a new interruptible child process
+    /// Spawn a new interruptible child process that has been specifically configured
+    /// to ensure it is interruptible. An error is returned if one occurs while attempting
+    /// to spawn the child process.
     fn spawn_interruptible(&mut self) -> io::Result<Self::Child>;
 }
 
-/// Trait for sending interrupts/ctrl-c to child processes
+/// A trait for sending interrupts/ctrl-c to child processes.
+///
+/// NOTE: By implementing this trait, you are stating that the correct steps have been taken to
+/// ensure that the child process can actually be interrupted.
 pub trait Interruptible {
-    /// Get the pid of the child process
-    fn pid(&self) -> Option<u32>;
+    /// Get the pid of the child process. It returns `Ok(Some(u32))` if the process is
+    /// running and the PID is available. It returns `Ok(None)` if the process is already known
+    /// to be completed. An error is returned if one occurs while attempting to get the pid.
+    fn pid(&mut self) -> io::Result<Option<u32>>;
 
-    /// Send a ctrl-c interrupt to the child process
-    fn interrupt(&self) -> io::Result<()> {
-        match self.pid() {
+    /// Send a ctrl-c interrupt to the child process. It returns an error if the
+    /// process is already known to be completed.
+    fn interrupt(&mut self) -> io::Result<()> {
+        match self.pid()? {
             Some(pid) => inner::interrupt(pid),
             None => Err(io::Error::other("Process is complete or has no pid")),
         }
