@@ -1,14 +1,51 @@
-use std::{io, process::Child};
+use std::{
+    io,
+    ops::{Deref, DerefMut},
+    process::{Child, Command},
+};
 
-use crate::Interruptible;
+use crate::{Interruptible, InterruptibleCommand};
 
-impl Interruptible for Child {
+#[cfg(windows)]
+fn set_creation_flags(command: &mut Command) {
+    use std::os::windows::process::CommandExt as _;
+    command.creation_flags(crate::CREATE_NEW_PROCESS_GROUP);
+}
+
+impl InterruptibleCommand for Command {
+    type Child = InterruptibleChild;
+
+    fn spawn_interruptible(&mut self) -> io::Result<InterruptibleChild> {
+        #[cfg(windows)]
+        set_creation_flags(self);
+        self.spawn().map(InterruptibleChild)
+    }
+}
+
+/// A child process that can be interrupted
+pub struct InterruptibleChild(Child);
+
+impl Interruptible for InterruptibleChild {
     fn pid(&mut self) -> io::Result<Option<u32>> {
-        match self.try_wait() {
+        match self.0.try_wait() {
             Ok(Some(_)) => Ok(None),
-            Ok(None) => Ok(Some(self.id())),
+            Ok(None) => Ok(Some(self.0.id())),
             Err(e) => Err(e),
         }
+    }
+}
+
+impl Deref for InterruptibleChild {
+    type Target = Child;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for InterruptibleChild {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
 
@@ -23,7 +60,7 @@ mod tests {
         command.arg("-t");
         command.arg("127.0.0.1");
 
-        let mut child = command.spawn().unwrap();
+        let mut child = command.spawn_interruptible().unwrap();
         child.interrupt().unwrap();
         child.wait().unwrap();
     }
@@ -32,7 +69,7 @@ mod tests {
     fn test_completed_interruptible_command() {
         let mut command = std::process::Command::new("ping");
 
-        let mut child = command.spawn().unwrap();
+        let mut child = command.spawn_interruptible().unwrap();
         child.wait().unwrap();
         assert!(child.interrupt().is_err());
     }
