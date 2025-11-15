@@ -69,4 +69,25 @@ mod tests {
         child.wait().await.unwrap();
         assert!(child.interrupt().is_err());
     }
+
+    #[tokio::test]
+    async fn test_terminate_interruptible_command() {
+        let mut command = tokio::process::Command::new("ping");
+        #[cfg(windows)]
+        command.arg("-t");
+        command.arg("127.0.0.1");
+
+        let mut child = command.spawn_interruptible().unwrap();
+        child.terminate().unwrap();
+        child.wait().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_completed_terminate_interruptible_command() {
+        let mut command = tokio::process::Command::new("ping");
+
+        let mut child = command.spawn_interruptible().unwrap();
+        child.wait().await.unwrap();
+        assert!(child.terminate().is_err());
+    }
 }

@@ -5,7 +5,7 @@
 [![Build](https://github.com/nu11ptr/send_ctrlc/workflows/CI/badge.svg)](https://github.com/nu11ptr/send_ctrlc/actions)
 [![codecov](https://codecov.io/github/nu11ptr/send_ctrlc/graph/badge.svg?token=3M5tvBewE5)](https://codecov.io/github/nu11ptr/send_ctrlc)
 
-A cross platform crate for sending ctrl-c to child processes
+A cross platform crate for interrupting or terminating child processes
 
 ## Install
 
@@ -27,10 +27,12 @@ cargo add send_ctrlc -F tokio
 
 ## Examples
 
+> The first example below is for synchronous use cases and the second for tokio/async use cases. However, both `interrupt` and `terminate` are available for both sync/async code.
+
 ```rust
 use send_ctrlc::{Interruptible as _, InterruptibleCommand as _};
 
-// Synchronous...
+// Interrupt example
 
 #[cfg(not(feature = "tokio"))]
 fn main() {
@@ -46,7 +48,7 @@ fn main() {
         child.wait().unwrap();
 }
 
-// or asynchronous...
+// Terminate example (async/tokio)
 
 #[cfg(feature = "tokio")]
 #[tokio::main]
@@ -59,7 +61,7 @@ async fn main() {
 
         // Spawn the ping, interrupt it, and wait for it to complete
         let mut child = command.spawn_interruptible().unwrap();
-        child.interrupt().unwrap();
+        child.terminate().unwrap();
         child.wait().await.unwrap();
 }
 ```
